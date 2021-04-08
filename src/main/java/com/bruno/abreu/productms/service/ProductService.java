@@ -39,4 +39,8 @@ public class ProductService {
     public List<Product> findBySearchParameters(String q, Double minPrice, Double maxPrice) {
         return productRepository.findBySearchParameters(q, minPrice, maxPrice);
     }
+
+    public void delete(UUID id) {
+        productRepository.deleteById(id);
+    }
 }

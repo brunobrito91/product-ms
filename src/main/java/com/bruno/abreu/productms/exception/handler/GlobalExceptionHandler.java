@@ -2,6 +2,7 @@ package com.bruno.abreu.productms.exception.handler;
 
 import com.bruno.abreu.productms.exception.ProductNotFound;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +45,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity handleProductNotFound(){
         return ResponseEntity.notFound().build();
     }
+
+    @ExceptionHandler(value = EmptyResultDataAccessException.class)
+    public ResponseEntity handleEmptyResultDataAccessException(){
+        return ResponseEntity.notFound().build();
+    }
+    
 }

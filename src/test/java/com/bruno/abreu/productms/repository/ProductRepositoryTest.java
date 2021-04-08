@@ -120,4 +120,13 @@ class ProductRepositoryTest {
         assertEquals(5, compatibleProducts.size());
     }
 
+    @Test
+    @Sql("/create-product-to-be-deleted.sql")
+    void deleteProductByIdShouldWorkFine(){
+        UUID id = UUID.fromString("788d791e-6c2e-44e3-925c-e6cee648df26");
+        assertTrue(productRepository.findById(id).isPresent());
+        productRepository.deleteById(id);
+        assertFalse(productRepository.findById(id).isPresent());
+    }
+
 }

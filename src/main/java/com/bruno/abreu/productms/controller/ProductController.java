@@ -70,4 +70,12 @@ public class ProductController {
                 .body(products);
 
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable("id") UUID id) {
+        productService.delete(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();
+    }
 }

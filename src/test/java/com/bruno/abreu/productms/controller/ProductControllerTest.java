@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,7 +23,7 @@ import org.springframework.util.MultiValueMapAdapter;
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -381,5 +382,29 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.content().json(content));
+    }
+
+    @Test
+    void deleteProductByIdShouldReturnOk() throws Exception {
+        UUID id = UUID.randomUUID();
+        doNothing().when(productService).delete(id);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete("/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteProductByIdNotSavedShouldReturnNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        doThrow(EmptyResultDataAccessException.class).when(productService).delete(id);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete("/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 }
