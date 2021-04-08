@@ -8,8 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class ProductRepositoryTest {
@@ -41,5 +40,17 @@ class ProductRepositoryTest {
         Product newProduct = productRepository.save(product);
         assertEquals(product.getId(),newProduct.getId());
         assertTrue(productRepository.findById(newProduct.getId()).isPresent());
+    }
+
+    @Test
+    void findProductByIdShouldBeFound(){
+        UUID id = UUID.fromString("fe13fded-fa56-425b-bc35-ae70981dcfb8");
+        assertTrue(productRepository.findById(id).isPresent());
+    }
+
+    @Test
+    void findProductNotSavedYetByIdShouldNotBeFound(){
+        UUID id = UUID.randomUUID();
+        assertFalse(productRepository.findById(id).isPresent());
     }
 }

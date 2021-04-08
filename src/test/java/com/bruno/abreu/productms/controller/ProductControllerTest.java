@@ -209,4 +209,41 @@ class ProductControllerTest {
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void findProductByIdShouldReturnOk() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(productService.findById(id)).thenReturn(product);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findProductByIdShouldReturnProductOnResponseBody() throws Exception {
+        String content = objectMapper.writeValueAsString(product);
+        UUID id = UUID.randomUUID();
+        when(productService.findById(id)).thenReturn(product);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(content));
+    }
+
+    @Test
+    void findProductNotSavedYetByIdShouldReturnNotFound() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(productService.findById(id)).thenThrow(ProductNotFound.class);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 }

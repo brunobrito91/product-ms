@@ -6,6 +6,8 @@ import com.bruno.abreu.productms.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class ProductService {
 
@@ -21,7 +23,11 @@ public class ProductService {
     }
 
     public Product update(Product product) {
-        productRepository.findById(product.getId()).orElseThrow(ProductNotFound::new);
+        findById(product.getId());
         return productRepository.save(product);
+    }
+
+    public Product findById(UUID id) {
+        return productRepository.findById(id).orElseThrow(ProductNotFound::new);
     }
 }

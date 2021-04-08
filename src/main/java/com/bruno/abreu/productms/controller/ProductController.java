@@ -37,4 +37,12 @@ public class ProductController {
                 .status(HttpStatus.OK)
                 .body(newProduct);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> findById(@PathVariable("id") UUID id){
+        Product product = productService.findById(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(product);
+    }
 }

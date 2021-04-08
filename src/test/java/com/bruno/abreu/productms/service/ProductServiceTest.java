@@ -60,4 +60,12 @@ class ProductServiceTest {
         Product newProduct = productService.update(product);
         assertEquals(expectedNewProduct, newProduct);
     }
+
+    @Test
+    void findProductByIdShouldReturnProduct(){
+        when(productRepository.findById(expectedNewProduct.getId())).thenReturn(Optional.of(expectedNewProduct));
+
+        Product newProduct = productService.findById(expectedNewProduct.getId());
+        assertEquals(expectedNewProduct, newProduct);
+    }
 }
