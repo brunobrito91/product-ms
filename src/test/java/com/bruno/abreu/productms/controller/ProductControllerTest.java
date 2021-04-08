@@ -3,7 +3,9 @@ package com.bruno.abreu.productms.controller;
 import com.bruno.abreu.productms.exception.ProductNotFound;
 import com.bruno.abreu.productms.model.Product;
 import com.bruno.abreu.productms.service.ProductService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +16,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest
@@ -34,6 +39,8 @@ class ProductControllerTest {
 
     private static Product product;
 
+    private static List<Product> products;
+
     @BeforeAll
     static void setup() {
         product = Product.builder()
@@ -42,6 +49,11 @@ class ProductControllerTest {
                 .description("Description 1")
                 .price(1.0)
                 .build();
+        products = List.of(Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build());
     }
 
     @Test
@@ -245,5 +257,57 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void findAllProductsShouldReturnOk() throws Exception {
+        when(productService.findAll()).thenReturn(products);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findAllProductsShouldReturnAllProductsOnResponseBody() throws Exception {
+        String content = objectMapper.writeValueAsString(products);
+
+        when(productService.findAll()).thenReturn(products);
+        String contentAsString = mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(content))
+                .andExpect(jsonPath("$", hasSize(products.size())))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {});
+        Assertions.assertEquals(products, productsReturned);
+    }
+
+    @Test
+    void findAllProductsShouldReturnEmptyListOnResponseBody() throws Exception {
+        List<Product> emptyList = List.of();
+        String content = objectMapper.writeValueAsString(emptyList);
+
+        when(productService.findAll()).thenReturn(emptyList);
+        String contentAsString = mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(content))
+                .andExpect(jsonPath("$", hasSize(emptyList.size())))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {});
+        Assertions.assertEquals(emptyList, productsReturned);
     }
 }

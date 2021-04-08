@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,7 @@ class ProductServiceTest {
 
     private static Product product;
     private static Product expectedNewProduct;
+    private static List<Product> products;
 
     @Autowired
     private ProductService productService;
@@ -42,6 +44,11 @@ class ProductServiceTest {
                 .description("Description 1")
                 .price(1.0)
                 .build();
+        products = List.of(Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build(),
+                Product.builder().build());
     }
 
     @Test
@@ -67,5 +74,22 @@ class ProductServiceTest {
 
         Product newProduct = productService.findById(expectedNewProduct.getId());
         assertEquals(expectedNewProduct, newProduct);
+    }
+
+    @Test
+    void findAllProductsShouldReturnAllProducts(){
+        when(productRepository.findAll()).thenReturn(products);
+
+        List<Product> productsReturned = productService.findAll();
+        assertEquals(products, productsReturned);
+    }
+
+    @Test
+    void findAllProductsShouldReturnEmptyList(){
+        List<Product> emptyList = List.of();
+        when(productRepository.findAll()).thenReturn(emptyList);
+
+        List<Product> productsReturned = productService.findAll();
+        assertEquals(emptyList, productsReturned);
     }
 }

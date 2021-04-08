@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.UUID;
 
@@ -53,4 +54,17 @@ class ProductRepositoryTest {
         UUID id = UUID.randomUUID();
         assertFalse(productRepository.findById(id).isPresent());
     }
+
+    @Test
+    void findAllProductsShouldReturnAllProducts(){
+        assertFalse(productRepository.findAll().isEmpty());
+        assertEquals(5, productRepository.findAll().size());
+    }
+
+//    @Test
+//    @Sql("/product-table-empty.sql")
+//    @Sql(scripts = "/data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+//    void findAllProductShouldReturnEmptyList(){
+//        assertTrue(productRepository.findAll().isEmpty());
+//    }
 }

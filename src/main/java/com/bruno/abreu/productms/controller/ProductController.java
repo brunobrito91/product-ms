@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,5 +45,13 @@ public class ProductController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(product);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Product>> findAll(){
+        List<Product> products = productService.findAll();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(products);
     }
 }
