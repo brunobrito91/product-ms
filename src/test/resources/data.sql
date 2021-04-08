@@ -1,0 +1,1 @@
+INSERT INTO product (id, description, name, price) VALUES ('fe13fded-fa56-425b-bc35-ae70981dcfb8', 'Description 1', 'Product 1', 1.1);

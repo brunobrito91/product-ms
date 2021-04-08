@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
@@ -28,6 +31,15 @@ class ProductRepositoryTest {
     @Test
     void saveProductShouldReturnProductWithId(){
         Product newProduct = productRepository.save(product);
+        assertTrue(productRepository.findById(newProduct.getId()).isPresent());
+    }
+
+    @Test
+    void updateProductShouldReturnProductWithId(){
+        product.setId(UUID.fromString("fe13fded-fa56-425b-bc35-ae70981dcfb8"));
+        productRepository.findById(product.getId()).orElseThrow();
+        Product newProduct = productRepository.save(product);
+        assertEquals(product.getId(),newProduct.getId());
         assertTrue(productRepository.findById(newProduct.getId()).isPresent());
     }
 }

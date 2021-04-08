@@ -5,12 +5,10 @@ import com.bruno.abreu.productms.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
@@ -24,10 +22,19 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> save(@Valid @RequestBody Product product){
-        Product newProduct = productService.save(product);
+    public ResponseEntity<Product> create(@Valid @RequestBody Product product){
+        Product newProduct = productService.create(product);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
+                .body(newProduct);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@Valid @RequestBody Product product, @PathVariable("id") UUID id){
+        product.setId(id);
+        Product newProduct = productService.update(product);
+        return ResponseEntity
+                .status(HttpStatus.OK)
                 .body(newProduct);
     }
 }

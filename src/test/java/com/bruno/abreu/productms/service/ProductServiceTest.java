@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +47,17 @@ class ProductServiceTest {
     @Test
     void saveProductShouldReturnProduct(){
         when(productRepository.save(product)).thenReturn(expectedNewProduct);
-        Product newProduct = productService.save(product);
+
+        Product newProduct = productService.create(product);
+        assertEquals(expectedNewProduct, newProduct);
+    }
+
+    @Test
+    void updateProductShouldReturnProduct(){
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(productRepository.save(product)).thenReturn(expectedNewProduct);
+
+        Product newProduct = productService.update(product);
         assertEquals(expectedNewProduct, newProduct);
     }
 }

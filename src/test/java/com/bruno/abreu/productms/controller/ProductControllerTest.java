@@ -1,5 +1,6 @@
 package com.bruno.abreu.productms.controller;
 
+import com.bruno.abreu.productms.exception.ProductNotFound;
 import com.bruno.abreu.productms.model.Product;
 import com.bruno.abreu.productms.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +35,7 @@ class ProductControllerTest {
     private static Product product;
 
     @BeforeAll
-    static void setup(){
+    static void setup() {
         product = Product.builder()
                 .id(UUID.randomUUID())
                 .name("Product 1")
@@ -47,7 +48,7 @@ class ProductControllerTest {
     void saveProductShouldReturnStatusCreated() throws Exception {
         String content = objectMapper.writeValueAsString(product);
 
-        when(productService.save(product)).thenReturn(product);
+        when(productService.create(product)).thenReturn(product);
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -62,7 +63,7 @@ class ProductControllerTest {
     void saveProductShouldReturnProductOnResponseBody() throws Exception {
         String content = objectMapper.writeValueAsString(product);
 
-        when(productService.save(product)).thenReturn(product);
+        when(productService.create(product)).thenReturn(product);
 
         mockMvc
                 .perform(MockMvcRequestBuilders
@@ -117,5 +118,95 @@ class ProductControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.content().json(responseBody));
+    }
+
+    @Test
+    void updateProductShouldReturnStatusOk() throws Exception {
+        String content = objectMapper.writeValueAsString(product);
+
+        when(productService.update(product)).thenReturn(product);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateProductShouldReturnProductOnResponseBody() throws Exception {
+        String content = objectMapper.writeValueAsString(product);
+
+        when(productService.update(product)).thenReturn(product);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(content));
+    }
+
+    @Test
+    void updateProductIncompleteShouldReturnBadRequest() throws Exception {
+        Product productIncomplete = Product.builder().build();
+        String content = objectMapper.writeValueAsString(productIncomplete);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateProductIncompleteShouldReturnAnSpecificResponseOnResponseBody() throws Exception {
+        Product productIncomplete = Product.builder().build();
+        String content = objectMapper.writeValueAsString(productIncomplete);
+
+        String responseBody = "{\"status_code\":400,\"message\":\"[Description must not be blank, Name must not be blank, Price must not be null]\"}";
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(responseBody));
+    }
+
+    @Test
+    void updateProductWithNegativePriceShouldReturnAnSpecificResponseOnResponseBody() throws Exception {
+        Product productIncomplete = Product.builder()
+                .price(-1.0)
+                .build();
+        String content = objectMapper.writeValueAsString(productIncomplete);
+
+        String responseBody = "{\"status_code\":400,\"message\":\"[Description must not be blank, Name must not be blank, Price must be greater than 0]\"}";
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(responseBody));
+    }
+
+    @Test
+    void updateProductNotSavedYetShouldReturnNotFound() throws Exception {
+        String content = objectMapper.writeValueAsString(product);
+
+        when(productService.update(product)).thenThrow(ProductNotFound.class);
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/products/{id}", product.getId())
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
     }
 }
