@@ -6,9 +6,9 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - product-ms-database-network
+      - product-ms-network
     volumes:
-      - product-ms-database-volume:/var/lib/mysql
+      - product-ms-volume:/var/lib/mysql
     restart: always
     environment:
       MYSQL_ROOT_USER: root
@@ -17,8 +17,23 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
 
+  product-ms-application-service:
+    container_name: product-ms-application-container
+    image: product-ms
+    ports:
+      - "9999:9999"
+    networks:
+      - product-ms-network
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - product-ms-database-service
+    environment:
+      MYSQL_HOST: product-ms-database-service
+
 networks:
-  product-ms-database-network:
+  product-ms-network:
 
 volumes:
-  product-ms-database-volume:
+  product-ms-volume:
