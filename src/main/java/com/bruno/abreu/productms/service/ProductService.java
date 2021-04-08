@@ -35,4 +35,8 @@ public class ProductService {
     public List<Product> findAll() {
         return productRepository.findAll();
     }
+
+    public List<Product> findBySearchParameters(String q, Double minPrice, Double maxPrice) {
+        return productRepository.findBySearchParameters(q, minPrice, maxPrice);
+    }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -23,7 +24,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> create(@Valid @RequestBody Product product){
+    public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
         Product newProduct = productService.create(product);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -31,7 +32,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@Valid @RequestBody Product product, @PathVariable("id") UUID id){
+    public ResponseEntity<Product> update(@Valid @RequestBody Product product, @PathVariable("id") UUID id) {
         product.setId(id);
         Product newProduct = productService.update(product);
         return ResponseEntity
@@ -40,7 +41,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> findById(@PathVariable("id") UUID id){
+    public ResponseEntity<Product> findById(@PathVariable("id") UUID id) {
         Product product = productService.findById(id);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -48,10 +49,25 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Product>> findAll(){
+    public ResponseEntity<List<Product>> findAll() {
         List<Product> products = productService.findAll();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(products);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> findBySearchParameters(
+            @RequestParam(value = "q", required = false) Optional<String> q,
+            @RequestParam(value = "min_price", required = false) Optional<Double> minPrice,
+            @RequestParam(value = "max_price", required = false) Optional<Double> maxPrice) {
+        List<Product> products = productService.findBySearchParameters(
+                q.orElse(""),
+                minPrice.orElse(Double.MIN_VALUE),
+                maxPrice.orElse(Double.MAX_VALUE));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(products);
+
     }
 }

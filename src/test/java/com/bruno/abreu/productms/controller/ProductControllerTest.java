@@ -15,9 +15,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.MultiValueMapAdapter;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
@@ -40,6 +42,7 @@ class ProductControllerTest {
     private static Product product;
 
     private static List<Product> products;
+    private static List<Product> compatibleProducts;
 
     @BeforeAll
     static void setup() {
@@ -54,6 +57,18 @@ class ProductControllerTest {
                 Product.builder().build(),
                 Product.builder().build(),
                 Product.builder().build());
+
+        compatibleProducts = List.of(
+                Product.builder()
+                        .name("Product 1")
+                        .description("Description 1")
+                        .price(1.1)
+                        .build(),
+                Product.builder()
+                        .name("Product 2")
+                        .description("Description 2")
+                        .price(2.2)
+                        .build());
     }
 
     @Test
@@ -286,7 +301,8 @@ class ProductControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {});
+        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {
+        });
         Assertions.assertEquals(products, productsReturned);
     }
 
@@ -307,7 +323,63 @@ class ProductControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {});
+        List<Product> productsReturned = objectMapper.readValue(contentAsString, new TypeReference<>() {
+        });
         Assertions.assertEquals(emptyList, productsReturned);
+    }
+
+    @Test
+    void findProductsBySearchParametersShouldReturnOk() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("q", "Description");
+        params.add("min_price", "1");
+        params.add("max_price", "3");
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/search")
+                        .queryParams(params)
+
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findProductsByIncompleteSearchParametersShouldReturnOk() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/search")
+                        .queryParams(params)
+
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void findProductsBySearchParametersShouldReturnCompatibleProducts() throws Exception {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("q", "Description");
+        params.add("min_price", "1");
+        params.add("max_price", "3");
+
+        String content = objectMapper.writeValueAsString(compatibleProducts);
+
+        when(productService.findBySearchParameters(
+                params.getFirst("q"),
+                Double.valueOf(Objects.requireNonNull(params.getFirst("min_price"))),
+                Double.valueOf(Objects.requireNonNull(params.getFirst("max_price"))))
+        ).thenReturn(compatibleProducts);
+
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/products/search")
+                        .queryParams(params)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(MockMvcResultMatchers.content().json(content));
     }
 }
